@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Search;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Elasticsearch\ClientBuilder;
+use GuzzleHttp\Client;
 
 class SearchController extends Controller
 {
@@ -15,21 +16,28 @@ class SearchController extends Controller
      */
     public function index()
     {
+        $client = new Client();
+        $request = $client->request('GET','http://172.22.161.66:9200/jwzx/category/_search',['query' => 'q=text:教务']);
 
+        echo $request->getBody();exit;
         $a = new \Elasticsearch\ClientBuilder();
         $search =  $a->create()->setHosts(['172.22.161.66:9200'])->build();
         $params = [
             'index' => 'jwzx',
             'type' => 'category',
-            '_source' => [
+            'body' => [
                 'query' => [
                     'match' => [
                         'text' => '教务'
-                    ]
+                    ],
+  
+                ],
+                'highlight'=> [
+                    "pre_tags"  => '<em>',
+                    "post_tags" => '</em>',
                 ]
             ]
         ];
-
         $response = $search->search($params);
         print_r($response);
 
