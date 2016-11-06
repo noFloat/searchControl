@@ -17,8 +17,30 @@ class SearchController extends Controller
     public function index()
     {
         $client = new Client();
-        $request = $client->request('GET','http://172.22.161.66:9200/jwzx/category/_search',['query' => 'q=text:教务']);
-
+        $request = $client->request('GET','http://172.22.161.66:9200/jwzx/category/_search',
+            [
+                // 'query' => 'q=text:教务',
+                // 'highlight'=>'fields=about:教务'
+                // 'json'=>[
+                //     'query' =>[
+                //         'term'=>[
+                //             'text' => '教务'
+                //         ]
+                //     ]
+                // ]
+                'json'=>[
+                    'query' =>[
+                        'match'=>[
+                            'text' => '教务'
+                        ]
+                    ],
+                    "highlight"=>[
+                        "fields" => [
+                             "text" => []
+                        ]
+                    ]
+                ]
+            ]);
         echo $request->getBody();exit;
         $a = new \Elasticsearch\ClientBuilder();
         $search =  $a->create()->setHosts(['172.22.161.66:9200'])->build();
