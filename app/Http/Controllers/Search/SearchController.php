@@ -16,9 +16,7 @@ class SearchController extends Controller
      */
     public function index()
     {
-        $this->getNewMovies();
-
-        EXIT;
+        
         $client = new Client();
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
