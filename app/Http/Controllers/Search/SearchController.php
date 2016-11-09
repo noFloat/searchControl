@@ -123,6 +123,7 @@ class SearchController extends Controller
      */
     public function show($id)
     {
+        header("Access-Control-Allow-Origin: *");
         $client = new Client();
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
