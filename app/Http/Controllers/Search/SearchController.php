@@ -123,7 +123,33 @@ class SearchController extends Controller
      */
     public function show($id)
     {
-        //
+        $client = new Client();
+        $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
+            [
+                'json'=>[
+                    'query' =>[
+                        'match'=>[
+                            'text' => $id
+                        ]
+                    ],
+                    'highlight'=>[
+                        'pre_tags' => '<div color ="red">',
+                        'post_tags'=> '</div>',
+                        'fields' => [
+                            'text' => (object)[]
+                        ]
+                    ]
+                ]
+            ]);
+
+        $goal = json_decode($request->getBody());
+        $goal_array = $goal->hits->hits;
+        $last_array = [];
+        foreach ($goal_array as $key => $value) {
+            $last_array[$key]=$goal_array[$key]->highlight;
+        }
+        echo json_encode($last_array);
+        exit;
     }
 
     /**
