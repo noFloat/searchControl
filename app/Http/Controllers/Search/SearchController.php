@@ -21,6 +21,8 @@ class SearchController extends Controller
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
                 'json'=>[
+                    'from' => 0, 
+                    'size' => 10,    
                     'query' =>[
                         'match'=>[
                             'text' => '教务'
@@ -38,7 +40,7 @@ class SearchController extends Controller
 
         $goal = json_decode($request->getBody());
         $goal_array = $goal->hits->hits;
-        
+        //echo $goal->hits->total;exit;
         foreach ($goal_array as $key => $value) {
             echo $goal_array[$key]->highlight->text[0];exit;
         }
@@ -128,6 +130,8 @@ class SearchController extends Controller
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
                 'json'=>[
+                    'from' => 0, 
+                    'size' => 10, 
                     'query' =>[
                         'match'=>[
                             'text' => $id
@@ -145,14 +149,49 @@ class SearchController extends Controller
 
         $goal = json_decode($request->getBody());
         $goal_array = $goal->hits->hits;
-        $last_array = [];
+        $last_array['total'] = $goal->hits->total;
         foreach ($goal_array as $key => $value) {
-            $last_array[$key]=$goal_array[$key]->highlight;
+            $last_array['info'][$key]=$goal_array[$key]->highlight;
         }
+        var_dump($last_array);exit;
         echo json_encode($last_array);
         exit;
     }
 
+    public function show_goals(Request $request,$goal,$id)
+    {
+        header("Access-Control-Allow-Origin: *");
+        $client = new Client();
+        $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
+            [
+                'json'=>[
+                    'from' => $id-1, 
+                    'size' => 10, 
+                    'query' =>[
+                        'match'=>[
+                            'text' => $goal
+                        ]
+                    ],
+                    'highlight'=>[
+                        'pre_tags' => '<div style = "color:red">',
+                        'post_tags'=> '</div>',
+                        'fields' => [
+                            'text' => (object)[]
+                        ]
+                    ]
+                ]
+            ]);
+
+        $goal = json_decode($request->getBody());
+        $goal_array = $goal->hits->hits;
+        $last_array['total'] = $goal->hits->total;
+        $last_array['cut'] = $id+1;
+        foreach ($goal_array as $key => $value) {
+            $last_array['info'][$key]=$goal_array[$key]->highlight;
+        }
+        echo json_encode($last_array);
+        exit;
+    }
     /**
      * Show the form for editing the specified resource.
      *
