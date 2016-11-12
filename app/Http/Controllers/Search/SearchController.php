@@ -184,11 +184,19 @@ class SearchController extends Controller
 
         $goal = json_decode($request->getBody());
         $goal_array = $goal->hits->hits;
+        //var_dump($goal_array);exit;
         $last_array['total'] = $goal->hits->total;
         $last_array['cut'] = $id+1;
         foreach ($goal_array as $key => $value) {
-            $last_array['info'][$key]=$goal_array[$key]->highlight;
+            
+            $last_array['info'][$key] = [
+                "content" => $goal_array[$key]->highlight,
+                "url"     => $goal_array[$key]->_source->baseUrl,
+                "title"    => $goal_array[$key]->_source->title,
+                "fetch_time"   => $goal_array[$key]->_source->fetchTime
+            ];
         }
+        var_dump($last_array);exit;
         echo json_encode($last_array);
         exit;
     }

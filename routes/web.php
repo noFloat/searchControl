@@ -15,4 +15,4 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::resource('search', 'Search\SearchController');
-Route::any('results/{goal}/{cut}', 'Search\SearchController@show_goals')->where('cut', '[0-9]+');;
+Route::any('results/{goal}/{cut}', 'Search\SearchController@show_goals')->where('cut', '[0-9]+');
