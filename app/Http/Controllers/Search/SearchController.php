@@ -186,7 +186,7 @@ class SearchController extends Controller
         $goal_array = $goal->hits->hits;
         //var_dump($goal_array);exit;
         $last_array['total'] = $goal->hits->total;
-        $last_array['cut'] = $id+1;
+        $last_array['cut'] = $id;
         foreach ($goal_array as $key => $value) {
             
             $last_array['info'][$key] = [
@@ -196,6 +196,7 @@ class SearchController extends Controller
                 "fetch_time"   => $goal_array[$key]->_source->fetchTime
             ];
         }
+        var_dump($last_array);exit;
         echo json_encode($last_array);
         exit;
     }
