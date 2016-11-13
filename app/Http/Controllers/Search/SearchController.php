@@ -196,7 +196,7 @@ class SearchController extends Controller
                 "fetch_time"   => $goal_array[$key]->_source->fetchTime
             ];
         }
-        var_dump($last_array);exit;
+
         echo json_encode($last_array);
         exit;
     }
