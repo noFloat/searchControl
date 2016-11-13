@@ -16,7 +16,6 @@ class SearchController extends Controller
      */
     public function index()
     {
-        
         $client = new Client();
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
@@ -71,6 +70,7 @@ class SearchController extends Controller
     }
 
     public function getNewMovies(){
+        header("Access-Control-Allow-Origin: *");
         $client = new Client();
         $request = $client->request('POST','http://172.22.161.11/index/',
             [   
@@ -80,14 +80,14 @@ class SearchController extends Controller
             ]);
 
         $content=$request->GetBody();
-        echo $content;exit;
-        $pattern = '<div class="poster">
-        <a href="javascript:void(0)" url="/torrent/showInfo/id/7452.html" class="window">
-            <img src="http://172.22.161.11/upload/pic/2c38b094a17e875661b36a1edc5811aa.jpg" alt="【美国】自杀小队"  />
-        </a>
-    </div>';
+        $pattern = '/<img src="(.*?)" alt="(.*?)"  \/>/';
         $goal = $this->_patternGoal($pattern,$content);
-
+        for($i=0;$i<3;$i++) {
+            $movies[$i]['href'] = 'http://172.22.161.11';
+            $movies[$i]['image'] = $goal[1][$i];
+            $movies[$i]['title'] = $goal[2][$i];
+        }
+        echo json_encode($movies);
         exit; 
     }
 
