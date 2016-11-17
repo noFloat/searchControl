@@ -17,26 +17,30 @@ class SearchController extends Controller
     public function index()
     {
         $client = new Client();
-        $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
+        $request = $client->request('PUT','http://172.22.161.66:9200/logs/',
             [
-                'json'=>[
-                    'from' => 0, 
-                    'size' => 10,    
-                    'query' =>[
-                        'match'=>[
-                            'text' => '教务'
-                        ]
-                    ],
-                    'highlight'=>[
-                        'pre_tags' => '<div color ="red">',
-                        'post_tags'=> '</div>',
-                        'fields' => [
-                            'text' => (object)[]
-                        ]
-                    ]
-                ]
+                "jwzx"=>[ 
+                  "properties"=>[  
+                     "ID"=>[
+                        "type"=>"string",  
+                        "index"=>"not_analyzed"   
+                     ],              
+                     "NAME"=>[
+                        "type"=>"string",
+                        "fields"=>[
+                            "NAME" =>[
+                                "type"=>"string"
+                            ],
+                            "raw"=>[
+                                "type"=>"string",
+                                "index"=>"not_analyzed"  
+                            ]
+                        ]                  
+                    ]                  
+                  ]  
+               ]   
             ]);
-
+        exit;
         $goal = json_decode($request->getBody());
         $goal_array = $goal->hits->hits;
         //echo $goal->hits->total;exit;
@@ -160,6 +164,8 @@ class SearchController extends Controller
 
     public function show_goals(Request $request,$goal,$id)
     {
+        //echo 1481949574114 -2592000*1000;exit;
+
         header("Access-Control-Allow-Origin: *");
         $client = new Client();
         $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
@@ -181,22 +187,28 @@ class SearchController extends Controller
                     ]
                 ]
             ]);
-
         $goal = json_decode($request->getBody());
+
         $goal_array = $goal->hits->hits;
-        //var_dump($goal_array);exit;
+
         $last_array['total'] = $goal->hits->total;
         $last_array['cut'] = $id;
+
+        list($t1, $t2) = explode(' ', microtime());
+        $now_time =  $t2 . ceil( ($t1 * 1000) );
         foreach ($goal_array as $key => $value) {
-            
+            if($goal_array[$key]->_source->fetchTime>$now_time){
+                $time = $goal_array[$key]->_source->fetchTime - $goal_array[$key]->_source->fetchInterval*1000;
+            }else{
+                $time = $goal_array[$key]->_source->fetchTime;
+            }
             $last_array['info'][$key] = [
                 "content" => $goal_array[$key]->highlight,
                 "url"     => $goal_array[$key]->_source->baseUrl,
                 "title"    => $goal_array[$key]->_source->title,
-                "fetch_time"   => $goal_array[$key]->_source->fetchTime
+                "fetch_time"   => $time,
             ];
         }
-
         echo json_encode($last_array);
         exit;
     }
