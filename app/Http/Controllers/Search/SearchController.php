@@ -17,29 +17,47 @@ class SearchController extends Controller
     public function index()
     {
         $client = new Client();
-        $request = $client->request('PUT','http://172.22.161.66:9200/logs/',
+        // $request = $client->request('PUT','http://172.22.161.66:9200/logs/',
+        //     [
+        //         "jwzx"=>[ 
+        //           "properties"=>[  
+        //              "ID"=>[
+        //                 "type"=>"string",  
+        //                 "index"=>"not_analyzed"   
+        //              ],              
+        //              "NAME"=>[
+        //                 "type"=>"string",
+        //                 "fields"=>[
+        //                     "NAME" =>[
+        //                         "type"=>"string"
+        //                     ],
+        //                     "raw"=>[
+        //                         "type"=>"string",
+        //                         "index"=>"not_analyzed"  
+        //                     ]
+        //                 ]                  
+        //             ]                  
+        //           ]  
+        //        ]   
+
+        //     ]);
+        $request = $client->request('POST','http://172.22.161.66:9200/jwzx/category/_search',
             [
-                "jwzx"=>[ 
-                  "properties"=>[  
-                     "ID"=>[
-                        "type"=>"string",  
-                        "index"=>"not_analyzed"   
-                     ],              
-                     "NAME"=>[
-                        "type"=>"string",
-                        "fields"=>[
-                            "NAME" =>[
-                                "type"=>"string"
-                            ],
-                            "raw"=>[
-                                "type"=>"string",
-                                "index"=>"not_analyzed"  
-                            ]
-                        ]                  
-                    ]                  
-                  ]  
-               ]   
+                'json'=>[
+                    // 'query'=>[
+                    //     'filter'=>[
+                    //         'term'=>[
+                    //             'title'=>''
+                    //         ]
+
+                    //     ]
+                    // ]
+                    'query'=>[
+                        'script'=>"doc['title']==''"
+                    ]
+                ]
             ]);
+        echo $request->body();
         exit;
         $goal = json_decode($request->getBody());
         $goal_array = $goal->hits->hits;
@@ -172,11 +190,25 @@ class SearchController extends Controller
             [
                 'json'=>[
                     'from' => $id-1, 
-                    'size' => 10, 
-                    'query' =>[
-                        'match'=>[
-                            'text' => $goal
+                    'size' => 10,
+                    'filter'=>[
+                        'exists'=>[
+                            'field'=>'title'
                         ]
+                    ],
+                    'query' =>[
+                        'filtered'=>[
+                            'filter'=>[
+                                'script'=>[
+                                    'script'=>"doc['title'].value?1:0"
+                                ]
+                            ],
+                            'query' =>[                                        
+                                    'match'=>[
+                                        'text' => $goal
+                                    ]
+                            ]
+                        ]        
                     ],
                     'highlight'=>[
                         'pre_tags' => '<div style = "color:red">',
