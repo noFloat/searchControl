@@ -179,7 +179,9 @@ class SearchController extends Controller
         echo json_encode($last_array);
         exit;
     }
-
+    /*
+     分词重配，全文匹配重配
+    */
     public function show_goals(Request $request,$goal,$id)
     {
         //echo 1481949574114 -2592000*1000;exit;
@@ -191,11 +193,6 @@ class SearchController extends Controller
                 'json'=>[
                     'from' => $id-1, 
                     'size' => 10,
-                    'filter'=>[
-                        'exists'=>[
-                            'field'=>'title'
-                        ]
-                    ],
                     'query' =>[
                         'filtered'=>[
                             'filter'=>[
@@ -203,12 +200,18 @@ class SearchController extends Controller
                                     'script'=>"doc['title'].value?1:0"
                                 ]
                             ],
-                            'query' =>[                                        
-                                    'match'=>[
-                                        'text' => $goal
+                            'query' =>[
+                                'match'=>[
+                                    'title' => $goal
+                                ],                                        
+                                'match'=>[
+                                    'text' => [
+                                        'query'=>$goal,
+                                        "minimum_should_match"=> "50%"
                                     ]
+                                ]
                             ]
-                        ]        
+                        ]
                     ],
                     'highlight'=>[
                         'pre_tags' => '<div style = "color:red">',
